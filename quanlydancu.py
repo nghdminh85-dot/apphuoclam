@@ -34,7 +34,7 @@ menu = st.sidebar.selectbox(
 st.sidebar.markdown("---")
 st.sidebar.markdown("### Đăng nhập Chủ (Admin)")
 admin_pass = st.sidebar.text_input("Nhập mật khẩu Admin", type="password")
-is_admin = admin_pass == "admin123" # Đổi mật khẩu nếu cần
+is_admin = admin_pass == "phuoclam2026"  # Mật khẩu chuẩn xác theo yêu cầu
 
 if is_admin:
     st.sidebar.success("Đã cấp quyền Admin thành công!")
@@ -60,7 +60,7 @@ uploaded_file = st.sidebar.file_uploader("Tải lên file Excel dữ liệu dân
 if uploaded_file is not None:
     df = load_excel(uploaded_file)
 else:
-    # Tạo dữ liệu giả lập chuẩn cấu trúc nếu chưa tải file lên để hệ thống không bị lỗi trống
+    # Tạo dữ liệu giả lập chuẩn cấu trúc đúng 14 cột nếu chưa tải file lên
     data = {
         "STT": [1, 2, 3],
         "Số Tổ": ["T01", "T01", "T02"],
@@ -79,7 +79,7 @@ else:
     }
     df = pd.DataFrame(data)
 
-# Chuẩn hóa tên cột để tránh lệch hàng
+# Chuẩn hóa tên cột chính xác 14 cột theo yêu cầu
 expected_columns = [
     "STT", "Số Tổ", "Mã Hộ", "Họ tên chủ hộ", "Họ và tên", 
     "Ngày sinh", "Tuổi", "Giới tính", "CCCD/ĐDCN", "Số điện thoại", 
@@ -89,14 +89,13 @@ expected_columns = [
 # Kiểm tra và ánh xạ cột nếu file Excel có tên khác biệt nhẹ
 for col in expected_columns:
     if col not in df.columns:
-        # Tìm cột tương đương hoặc gán trống nếu không tìm thấy
-        matched = [c for c in df.columns if col.lower() in c.lower()]
+        matched = [c for c in df.columns if col.lower() in str(c).lower()]
         if matched:
             df.rename(columns={matched[0]: col}, inplace=True)
         else:
             df[col] = ""
 
-# Đảm bảo chỉ lấy đúng các cột chuẩn
+# Đảm bảo chỉ lấy đúng và đủ các cột chuẩn
 df = df[expected_columns]
 
 # --- PHÂN KHU CHỨC NĂNG ---
@@ -105,11 +104,11 @@ if menu == "Tổng quan Dân cư":
     st.markdown("### Báo Cáo Thống Kê Tổng Quan Dân Cư ấp Phước Lâm")
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.metric(label="Tổng số hộ", value=df['Mã Hộ'].nunique())
+        st.metric(label="Tổng số hộ", value=df['Mã Hộ'].nunique() if 'Mã Hộ' in df.columns else 0)
     with col2:
         st.metric(label="Tổng nhân khẩu", value=len(df))
     with col3:
-        st.metric(label="Số tổ quản lý", value=df['Số Tổ'].nunique())
+        st.metric(label="Số tổ quản lý", value=df['Số Tổ'].nunique() if 'Số Tổ' in df.columns else 0)
 
     st.markdown("---")
     st.markdown("#### Danh Sách Chi Tiết Dân Cư")
@@ -146,7 +145,10 @@ elif menu == "Đối chiếu & Lọc danh sách":
 elif menu == "Quản lý Khách thuê trọ":
     st.markdown("### Quản Lý Biến Động Khách Thuê Trọ & Tạm Trú")
     st.info("Chức năng quản lý danh sách nhà cho thuê, khách tạm trú và khai báo lưu trú tại ấp Phước Lâm.")
-    rent_df = df[df['Nơi ở hiện tại'] != df['Nơi thường trú']] if 'Nơi ở hiện tại' in df.columns else df
+    if 'Nơi ở hiện tại' in df.columns and 'Nơi thường trú' in df.columns:
+        rent_df = df[df['Nơi ở hiện tại'].astype(str).str.strip() != df['Nơi thường trú'].astype(str).str.strip()]
+    else:
+        rent_df = df
     st.dataframe(rent_df, use_container_width=True)
 
 elif menu == "Trợ lý Thông minh":
@@ -168,4 +170,4 @@ elif menu == "Quản trị Admin (Gốc)":
         if st.button("Lưu thay đổi"):
             st.success("Đã cập nhật cấu hình hệ thống thành công!")
     else:
-        st.error("Bạn chưa có quyền Admin! Vui lòng nhập mật khẩu chính xác ở thanh bên trái.")
+        st.error("Bạn chưa có quyền Admin! Vui lòng nhập mật khẩu chính xác (`phuoclam2026`) ở thanh bên trái.")
