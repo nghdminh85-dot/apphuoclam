@@ -9,7 +9,32 @@ st.set_page_config(
     page_icon="🏛️",
     layout="wide",
 )
-
+st.markdown("""
+<style>
+    /* Đổi màu nền chính của ứng dụng */
+    .stApp {
+        background-color: #f4f6f9;
+    }
+    /* Tùy chỉnh tiêu đề chính */
+    h1 {
+        color: #1f4e78;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    /* Tùy chỉnh các nút bấm */
+    .stButton>button {
+        background-color: #0066cc;
+        color: white;
+        border-radius: 8px;
+        border: none;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+    }
+    .stButton>button:hover {
+        background-color: #004999;
+        color: #ffffff;
+    }
+</style>
+""", unsafe_allow_html=True)
 # --- HỆ THỐNG BẢO MẬT BẰNG MẬT KHẨU ---
 # Anh/chị có thể đổi mật khẩu ở đây (Ví dụ: "phuoclam2026")
 MAT_KHAU_QUAN_TRI = "phuoclam2026"
