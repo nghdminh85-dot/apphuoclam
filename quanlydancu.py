@@ -1,227 +1,185 @@
-import os
-import re
-import pandas as pd
 import streamlit as st
+import pandas as pd
 
-# --- CẤU HÌNH TRANG & GIAO DIỆN CHUYÊN NGHIỆP ---
+# CẤU HÌNH TRANG VÀ GIAO DIỆN CHUYÊN NGHIỆP
 st.set_page_config(
-    page_title="Hệ Thống Quản Lý Dân Cư & Đối Soát - Ấp Phước Lâm",
+    page_title="Hệ thống Quản lý Dân cư & Đối soát - Ấp Phước Lâm",
     page_icon="🏛️",
-    layout="wide",
+    layout="wide"
 )
+
+# Giao diện CSS tùy chỉnh màu sắc sinh động, nổi bật và chuyên nghiệp
 st.markdown("""
-<style>
-    /* Đổi màu nền chính của ứng dụng */
-    .stApp {
-        background-color: #f4f6f9;
-    }
-    /* Tùy chỉnh tiêu đề chính */
-    h1 {
-        color: #1f4e78;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    /* Tùy chỉnh các nút bấm */
-    .stButton>button {
-        background-color: #0066cc;
-        color: white;
-        border-radius: 8px;
-        border: none;
-        padding: 0.5rem 1rem;
-        font-weight: bold;
-    }
-    .stButton>button:hover {
-        background-color: #004999;
-        color: #ffffff;
-    }
-</style>
+    <style>
+        .stApp {
+            background-color: #f4f7f6;
+        }
+        h1, h2, h3 {
+            color: #1f4e78;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-header {
+            background: linear-gradient(90deg, #1f4e78, #2e75b6);
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .stButton>button {
+            background-color: #2e75b6;
+            color: white;
+            font-weight: bold;
+            border-radius: 5px;
+            border: none;
+            padding: 10px 20px;
+        }
+        .stButton>button:hover {
+            background-color: #1f4e78;
+        }
+    </style>
 """, unsafe_allow_html=True)
-# --- HỆ THỐNG BẢO MẬT BẰNG MẬT KHẨU ---
-# Anh/chị có thể đổi mật khẩu ở đây (Ví dụ: "phuoclam2026")
-MAT_KHAU_QUAN_TRI = "phuoclam2026"
 
-def kiem_tra_dang_nhap():
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
+# TIÊU ĐỀ CHÍNH VỚI GIAO DIỆN ẤN TƯỢNG
+st.markdown("""
+    <div class="main-header">
+        <h1>🏛️ HỆ THỐNG QUẢN LÝ DÂN CƯ & ĐỐI SOÁT</h1>
+        <p style="font-size: 18px; margin: 0;">Ấp Phước Lâm - Tự động hóa 100% chuyên nghiệp</p>
+    </div>
+""", unsafe_allow_html=True)
 
-    if not st.session_state.authenticated:
-        st.markdown("<br><br>", unsafe_allow_html=True)
-        col1, col2, col3 = st.columns([1, 2, 1])
-        with col2:
-            st.markdown("""
-                <div style="background-color:white; padding:30px; border-radius:15px; border:1px solid #ddd; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align:center;">
-                <h2 style="color:#007bff; margin-bottom:10px;">🔒 ĐĂNG NHẬP HỆ THỐNG</h2>
-                <p style="color:#666; font-size:0.95rem;">Khu vực bảo mật dành riêng cho Cán bộ Quản lý Ấp Phước Lâm</p>
-                </div>
-            """, unsafe_allow_html=True)
-            
-            pwd = st.text_input("Nhập Mật khẩu quản trị:", type="password", placeholder="Nhập mật khẩu của bạn...")
-            if st.button("🔑 Đăng nhập vào hệ thống", use_container_width=True):
-                if pwd == MAT_KHAU_QUAN_TRI:
-                    st.session_state.authenticated = True
-                    st.rerun()
-                else:
-                    st.error("❌ Mật khẩu không chính xác! Vui lòng thử lại.")
-        return False
-    return True
+# ----------------- HỆ THỐNG ĐĂNG NHẬP BẢO MẬT -----------------
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-# Kiểm tra nếu chưa đăng nhập thì dừng lại ở màn hình khóa
-if not kiem_tra_dang_nhap():
+if not st.session_state.authenticated:
+    st.subheader("🔐 Đăng nhập hệ thống quản lý")
+    role = st.selectbox("Chọn vai trò đăng nhập:", ["Thành viên (Tra cứu)", "Admin / Chủ quản lý (Toàn quyền)"])
+    password = st.text_input("Nhập mật khẩu:", type="password")
+    
+    if st.button("Xác nhận đăng nhập"):
+        if role == "Admin / Chủ quản lý (Toàn quyền)" and password == "admin123": # Mật khẩu admin mẫu, có thể đổi
+            st.session_state.authenticated = True
+            st.session_state.role = "admin"
+            st.success("Đăng nhập thành công với quyền Admin!")
+            st.rerun()
+        elif role == "Thành viên (Tra cứu)" and password == "phuoclam123": # Mật khẩu thành viên mẫu
+            st.session_state.authenticated = True
+            st.session_state.role = "member"
+            st.success("Đăng nhập thành công!")
+            st.rerun()
+        else:
+            st.error("Mật khẩu không chính xác!")
     st.stop()
 
-# --- CSS TÙY CHỈNH GIAO DIỆN CAO CẤP ---
-st.markdown("""
-<style>
-    [data-testid="stSidebar"] {
-        background-color: #f0f2f6;
-        border-right: 1px solid #e0e0e0;
-    }
-    .stButton>button {
-        background-color: #007bff;
-        color: white;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
-        border: none;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .stButton>button:hover {
-        background-color: #0056b3;
-    }
-    [data-testid="stMetricValue"] {
-        font-size: 2.2rem;
-        font-weight: bold;
-        color: #007bff;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-# --- TIÊU ĐỀ CHÍNH ---
-st.markdown("""
-    <div style="background-color:#007bff;padding:15px;border-radius:10px;margin-bottom:20px">
-    <h1 style="color:white;text-align:center;margin:0;font-size:1.8rem;">🏛️ PHẦN MỀM QUẢN LÝ DÂN CƯ & ĐỐI SOÁT - ẤP PHƯỚC LÂM</h1>
-    <p style="color:white;text-align:center;margin:5px 0 0 0;font-size:1rem;">Hệ thống điều hành chuyên nghiệp độc quyền</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-# --- MENU CHỨC NĂNG ---
-st.sidebar.markdown("<h3 style='color:#007bff; text-align:center;'>📋 THỰC ĐƠN</h3>", unsafe_allow_html=True)
-menu = st.sidebar.radio(
-    "",
-    [
-        "1. Tra cứu & Báo cáo Tổng quan",
-        "2. Quản lý Thuê trọ & Biến động",
-        "3. Đối soát Khám sức khỏe cả Xã",
-        "4. Kiểm tra CCCD hàng loạt",
-    ],
-)
-
-st.sidebar.markdown("---")
-if st.sidebar.button("🔒 Đăng xuất tài khoản"):
+# Đăng xuất
+if st.sidebar.button("Đăng xuất tài khoản"):
     st.session_state.authenticated = False
     st.rerun()
 
-# =============================================================================
-# CHỨC NĂNG 1: TRA CỨU & DASHBOARD
-# =============================================================================
-if menu == "1. Tra cứu & Báo cáo Tổng quan":
-    st.subheader("🔍 Tra cứu nhân khẩu & Tổng quan Dữ liệu ấp")
-    with st.container():
-        file_goc = st.file_uploader("Tải lên file Danh sách gốc Ấp Phước Lâm (.xlsx)", type=["xlsx", "xls"], key="goc1")
-        if file_goc:
-            df_goc = pd.read_excel(file_goc)
-            total_ppl = len(df_goc)
-            total_to = df_goc['Tổ'].nunique() if 'Tổ' in df_goc.columns else 0
-            
-            col1, col2, col3 = st.columns(3)
-            with col1: st.metric("Tổng Dân số (Gốc)", f"{total_ppl:,}")
-            with col2: st.metric("Số lượng Tổ dân cư", f"{total_to:,}")
-            with col3: st.metric("Trạng thái", "Đã nạp dữ liệu")
+# ----------------- QUẢN LÝ FILE DỮ LIỆU GỐC (EXCEL) -----------------
+st.sidebar.markdown("---")
+st.sidebar.subheader("📂 Quản lý Dữ liệu Excel")
 
-    with st.container():
-        if file_goc:
-            tu_khoa = st.text_input("🔎 Nhập số CCCD, Họ tên hoặc Tổ dân cư để tra cứu nhanh:")
-            if tu_khoa:
-                mask = df_goc.astype(str).apply(lambda x: x.str.contains(tu_khoa, case=False)).any(axis=1)
-                df_kq = df_goc[mask]
-                st.success(f"✅ Tìm thấy **{len(df_kq)}** kết quả phù hợp:")
-                st.dataframe(df_kq, use_container_width=True)
+# Tải lên danh sách gốc (Chỉ Admin mới được thay đổi file gốc)
+if st.session_state.role == "admin":
+    uploaded_file = st.sidebar.file_uploader("Tải lên Danh sách dân cư gốc (.xlsx)", type=["xlsx", "xls"])
+    if uploaded_file is not None:
+        st.session_state.df_goc = pd.read_excel(uploaded_file)
+        st.sidebar.success("Đã cập nhật danh sách gốc thành công!")
+else:
+    st.sidebar.info("Bạn đang ở chế độ Thành viên: Dữ liệu gốc được bảo vệ, không thể chỉnh sửa.")
+    if "df_goc" not in st.session_state:
+        st.session_state.df_goc = None
+
+# Kiểm tra nếu chưa có dữ liệu
+if "df_goc" not in st.session_state or st.session_state.df_goc is None:
+    st.warning("⚠️ Vui lòng yêu cầu Admin tải lên file Excel dữ liệu dân cư gốc ở thanh bên trái để bắt đầu!")
+    st.stop()
+
+df = st.session_state.df_goc
+
+# ----------------- HIỂN THỊ DANH SÁCH TỔNG QUAN KHI MỞ PHẦN MỀM -----------------
+st.markdown("### 📋 Danh sách Tổng quan Dân cư")
+st.dataframe(df, use_container_width=True)
+
+st.markdown("---")
+
+# ----------------- CÁC TÍNH NĂNG CHÍNH -----------------
+tab1, tab2, tab3, tab4 = st.tabs([
+    "🔍 Tra cứu nhân khẩu & CCCD", 
+    "🏠 Quản lý Nhà trọ / Thuê nhà", 
+    "📊 Đối chiếu & Lọc danh sách", 
+    "⚙️ Cài đặt & Quản trị"
+])
+
+# --- TAB 1: TRA CỨU CHI TIẾT DÂN CƯ & CCCD ---
+with tab1:
+    st.subheader("tra cứu thông tin chi tiết công dân")
+    keyword = st.text_input("Nhập Họ tên hoặc Số Căn cước công dân (CCCD) cần tìm:")
+    
+    if keyword:
+        # Lọc dữ liệu theo từ khóa
+        mask = df.astype(str).apply(lambda x: x.str.contains(keyword, case=False, na=False)).any(axis=1)
+        res = df[mask]
+        
+        if not res.empty:
+            st.success(f"Tìm thấy {len(res)} kết quả phù hợp!")
+            for idx, row in res.iterrows():
+                with st.expander(f"Họ tên: {row.get('HoTen', 'N/A')} - CCCD: {row.get('SoCCCD', 'N/A')} (Bấm để xem chi tiết)"):
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.markdown(f"**👤 Họ và tên:** {row.get('HoTen', 'N/A')}")
+                        st.markdown(f"**📅 Ngày sinh:** {row.get('NgaySinh', 'N/A')}")
+                        st.markdown(f"**🆔 Số Căn cước:** {row.get('SoCCCD', 'N/A')}")
+                        st.markdown(f"**📞 Số điện thoại:** {row.get('SoDienThoai', 'N/A')}")
+                        st.markdown(f"**🏠 Chỗ ở hiện tại:** {row.get('ChoO', 'N/A')}")
+                    with col2:
+                        st.markdown(f"**📍 Tổ dân cư số:** {row.get('ToDanCu', 'N/A')}")
+                        st.markdown(f"**👨‍👩‍👧 Tổng số khẩu trong nhà:** {row.get('SoKhau', 'N/A')}")
+                        st.markdown(f"**👥 Danh sách từng khẩu:** {row.get('ThanhVienKhau', 'N/A')}")
+                        st.markdown(f"**👨‍👩‍👦 Họ tên Bố/Mẹ:** {row.get('BoMe', 'N/A')}")
+        else:
+            st.warning("Không tìm thấy thông tin phù hợp với từ khóa.")
+
+# --- TAB 2: QUẢN LÝ NGƯỜI THUÊ TRỌ ---
+with tab2:
+    st.subheader("🏠 Quản lý danh sách người thuê trọ / thuê nhà")
+    if "Tro" in df.columns or any("trọ" in str(c).lower() for c in df.columns):
+        # Lọc các dòng có thông tin thuê trọ
+        tro_df = df[df.astype(str).apply(lambda x: x.str.contains("trọ|thuê", case=False, na=False)).any(axis=1)]
+        st.dataframe(tro_df, use_container_width=True)
+    else:
+        st.info("File Excel gốc cần có cột thông tin về 'Phòng trọ' hoặc 'Thuê nhà' để hệ thống tự động tổng hợp.")
+        st.dataframe(df, use_container_width=True)
+
+# --- TAB 3: ĐỐI CHUẾ VÀ LỌC DANH SÁCH ---
+with tab3:
+    st.subheader("📊 Đối chiếu & Lọc danh sách khác (Kiểm tra trùng lặp)")
+    compare_file = st.file_uploader("Tải lên danh sách cần đối chiếu (.xlsx hoặc .csv)", type=["xlsx", "csv"])
+    
+    if compare_file is not None:
+        if compare_file.name.endswith('.csv'):
+            compare_df = pd.read_csv(compare_file)
+        else:
+            compare_df = pd.read_excel(compare_file)
+            
+        st.write("Dữ liệu danh sách cần kiểm tra:", compare_df.head())
+        
+        # Chọn cột để đối chiếu (ví dụ: Số CCCD hoặc Họ tên)
+        col_to_check = st.selectbox("Chọn cột dùng để đối chiếu trùng lặp:", compare_df.columns)
+        
+        if st.button("Thực hiện đối chiếu tự động"):
+            if col_to_check in df.columns:
+                matched = compare_df[compare_df[col_to_check].isin(df[col_to_check])]
+                st.warning(f"⚠️ Phát hiện {len(matched)} trường hợp trùng khớp với danh sách gốc:")
+                st.dataframe(matched, use_container_width=True)
             else:
-                st.dataframe(df_goc, use_container_width=True)
+                st.error(f"Cột '{col_to_check}' không tồn tại trong danh sách gốc của ấp.")
 
-# =============================================================================
-# CHỨC NĂNG 2: QUẢN LÝ THUÊ TRỌ
-# =============================================================================
-elif menu == "2. Quản lý Thuê trọ & Biến động":
-    st.subheader("🏠 Quản lý Thuê trọ & Biến động Cư trú")
-    with st.container():
-        file_bv = st.file_uploader("Tải lên file dữ liệu nhân khẩu (.xlsx)", type=["xlsx", "xls"], key="bv")
-    with st.container():
-        if file_bv:
-            df_bv = pd.read_excel(file_bv)
-            cot_tinhtrang = st.selectbox("Chọn cột phân loại (Ghi chú/Tình trạng):", df_bv.columns)
-            cac_tt = df_bv[cot_tinhtrang].dropna().unique().tolist()
-            chon_tt = st.multiselect("Lọc theo Tình trạng cụ thể:", cac_tt, default=cac_tt)
-            tu_khoa_tro = st.text_input("🔎 Tìm kiếm tên nhà trọ, chủ trọ hoặc địa chỉ:")
-            
-            df_hien_thị = df_bv[df_bv[cot_tinhtrang].isin(chon_tt)]
-            if tu_khoa_tro:
-                df_hien_thị = df_hien_thị[df_hien_thị.astype(str).apply(lambda x: x.str.contains(tu_khoa_tro, case=False)).any(axis=1)]
-            st.dataframe(df_hien_thị, use_container_width=True)
-            st.info(f"Hiển thị: **{len(df_hien_thị)}** nhân khẩu.")
-
-# =============================================================================
-# CHỨC NĂNG 3: ĐỐI SOÁT KHÁM SỨC KHỎE
-# =============================================================================
-elif menu == "3. Đối soát Khám sức khỏe cả Xã":
-    st.subheader("🏥 Tách riêng dữ liệu Phước Lâm & Đối soát Khám sức khỏe")
-    with st.container():
-        col_f1, col_f2 = st.columns(2)
-        with col_f1: file_goc = st.file_uploader("1. File Danh sách gốc Ấp Phước Lâm", type=["xlsx", "xls"], key="goc3")
-        with col_f2: file_xa = st.file_uploader("2. File Danh sách tổng cả Xã gửi về", type=["xlsx", "xls"], key="xa")
-    with st.container():
-        if file_goc and file_xa:
-            df_goc = pd.read_excel(file_goc)
-            df_xa = pd.read_excel(file_xa)
-            col_c1, col_c2 = st.columns(2)
-            with col_c1: cot_cccd_goc = st.selectbox("Cột CCCD trong file Gốc Phước Lâm:", df_goc.columns)
-            with col_c2: cot_cccd_xa = st.selectbox("Cột CCCD trong file Tổng của Xã:", df_xa.columns)
-            
-            if st.button("⚡ Tiến hành Tách dữ liệu & Đối soát"):
-                df_goc["Check"] = df_goc[cot_cccd_goc].astype(str).str.strip().str.replace('.0', '', regex=False)
-                df_xa["Check"] = df_xa[cot_cccd_xa].astype(str).str.strip().str.replace('.0', '', regex=False)
-                df_phuoc_lam_trong_xa = df_xa[df_xa["Check"].isin(df_goc["Check"])].drop(columns=["Check"])
-                df_chua_kham = df_goc[~df_goc["Check"].isin(df_xa["Check"])].drop(columns=["Check"])
-                
-                tab1, tab2 = st.tabs([f"✅ ĐÃ CÓ TÊN / ĐÃ KHÁM ({len(df_phuoc_lam_trong_xa)})", f"❌ CHƯA CÓ TÊN / CHƯA KHÁM ({len(df_chua_kham)})"])
-                with tab1: st.dataframe(df_phuoc_lam_trong_xa, use_container_width=True)
-                with tab2: st.dataframe(df_chua_kham, use_container_width=True)
-
-# =============================================================================
-# CHỨC NĂNG 4: KIỂM TRA CCCD HÀNG LOẠT
-# =============================================================================
-elif menu == "4. Kiểm tra CCCD hàng loạt":
-    st.subheader("⚡ Kiểm tra nhanh hàng loạt số CCCD (100 - 1000 số)")
-    with st.container():
-        file_goc = st.file_uploader("1. Tải lên file Danh sách gốc Ấp Phước Lâm", type=["xlsx", "xls"], key="goc2")
-        cot_cccd_goc = st.text_input("Tên cột CCCD trong file gốc:", value="CCCD")
-        danh_sach_nhap = st.text_area("2. Dán danh sách số CCCD vào đây (Mỗi số 1 dòng hoặc cách nhau bằng dấu phẩy):", height=200)
-    with st.container():
-        if file_goc and danh_sach_nhap:
-            if st.button("🚀 Bắt đầu quét và kiểm tra hàng loạt"):
-                df_goc = pd.read_excel(file_goc)
-                danh_sach_check = [str(x.strip()).replace('.0', '') for x in re.split(r",|\n|\s+", danh_sach_nhap) if x.strip()]
-                df_goc["CCCD_Chuan"] = df_goc[cot_cccd_goc].astype(str).str.strip().str.replace('.0', '', regex=False)
-                
-                df_la_dan_pl = df_goc[df_goc["CCCD_Chuan"].isin(danh_sach_check)].drop(columns=["CCCD_Chuan"])
-                cccd_co = df_la_dan_pl[cot_cccd_goc].astype(str).str.strip().str.replace('.0', '', regex=False).tolist()
-                cccd_khong_phai = [c for c in danh_sach_check if c not in cccd_co]
-                
-                col_res1, col_res2 = st.columns(2)
-                with col_res1:
-                    st.success(f"✅ Thuộc dân cư Phước Lâm ({len(df_la_dan_pl)} người):")
-                    st.dataframe(df_la_dan_pl, use_container_width=True)
-                with col_res2:
-                    if cccd_khong_phai:
-                        st.warning(f"⚠️ Không thuộc Phước Lâm ({len(cccd_khong_phai)} số):")
-                        st.write(cccd_khong_phai)
-                    else:
-                        st.success("🎉 Tất cả đều thuộc dân cư Phước Lâm!")
+# --- TAB 4: CÀI ĐẶT & QUẢN TRỊ ---
+with tab4:
+    st.subheader("⚙️ Cài đặt hệ thống")
+    st.markdown("- **Trạng thái hệ thống:** Đang hoạt động ổn định tự động 100%.")
+    st.markdown("- **Quyền hiện tại:** " + ("Admin (Toàn quyền)" if st.session_state.role == "admin" else "Thành viên (Chỉ tra cứu)"))
+    st.info("Mọi thao tác chỉnh sửa dữ liệu gốc đều được kiểm soát chặt chẽ qua tài khoản Admin để đảm bảo an toàn thông tin.")
