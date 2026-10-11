@@ -199,4 +199,4 @@ elif menu == "4. Kiểm tra CCCD hàng loạt":
                         st.warning(f"⚠️ Không thuộc Phước Lâm ({len(cccd_khong_phai)} số):")
                         st.write(cccd_khong_phai)
                     else:
-                        st.success("🎉 Tất cả đều thuộc dân cư Phước Lâm!")q
+                        st.success("🎉 Tất cả đều thuộc dân cư Phước Lâm!")
